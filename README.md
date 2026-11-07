@@ -49,11 +49,14 @@ Any provider that exposes an OpenAI-compatible `/v1/chat/completions` endpoint i
 
 ## Installation
 
+> 📦 **All downloads (Windows, Linux and macOS) are available on the release page:**  
+> **[https://github.com/Fanatic911/LibertyCode/releases/tag/v1.0.0](https://github.com/Fanatic911/LibertyCode/releases/tag/v1.0.0)**
+
 ### Windows
 
-1. Download the latest release from the [Releases](https://github.com/Fanatic911/LibertyCode/releases/latest) page.
-2. Open the `Finish` folder and pick the folder matching your processor architecture.
-3. Extract `LibertyCode.exe` anywhere on your system.
+1. Go to the [v1.0.0 release page](https://github.com/Fanatic911/LibertyCode/releases/tag/v1.0.0).
+2. Download the `LibertyCode.exe` that matches your processor architecture (`x64`, `x86` or `arm64`).
+3. Save `LibertyCode.exe` anywhere on your system.
 4. Run it — a setup wizard will guide you through selecting a provider, entering your API key, and choosing a model.
 
 The `Finish` folder contains one `LibertyCode.exe` compiled for each supported architecture:
@@ -78,7 +81,7 @@ LibertyCode ships as a proper `.deb` package. It installs automatically — Pyth
 **Requirements:** Debian 11+ or Ubuntu 20.04+ · `sudo` access
 
 ```bash
-# 1. Download Linux-Support.zip from the Releases page and extract it
+# 1. Download Linux-Support.zip from https://github.com/Fanatic911/LibertyCode/releases/tag/v1.0.0 and extract it
 unzip Linux-Support.zip
 cd Linux-Support
 
