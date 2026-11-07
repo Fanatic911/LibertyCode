@@ -1,0 +1,14 @@
+#!/bin/sh
+# LibertyCode — Installeur macOS (bundle .app)
+# Double-clique dans le Finder → Terminal s'ouvre et lance l'installation.
+
+BUNDLE_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
+RESOURCES="$BUNDLE_DIR/Contents/Resources"
+
+# Ouvrir un Terminal pour montrer la progression
+osascript << ASCRIPT
+tell application "Terminal"
+    activate
+    do script "bash '$RESOURCES/installer.sh'; exec bash"
+end tell
+ASCRIPT

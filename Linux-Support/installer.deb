@@ -1,0 +1,90 @@
+#!/bin/sh
+# LibertyCode — Installeur Debian/Ubuntu
+# Installe Python 3.11, crée le venv, installe les dépendances,
+# puis supprime cet installeur. L'utilisateur n'a rien à faire.
+
+set -e
+SELF="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
+HERE="$(cd "$(dirname "$0")" && pwd)"
+cd "$HERE"
+
+echo ""
+echo "╔══════════════════════════════════════════╗"
+echo "║   LibertyCode — Installeur Debian/Ubuntu ║"
+echo "╚══════════════════════════════════════════╝"
+echo ""
+
+# ── 1. Vérifier qu'on est root ou qu'on a sudo ────────────────────────────────
+SUDO=""
+if [ "$(id -u)" -ne 0 ]; then
+    if command -v sudo >/dev/null 2>&1; then
+        SUDO="sudo"
+    else
+        echo "[ERREUR] Root ou sudo requis pour installer Python."
+        exit 1
+    fi
+fi
+
+# ── 2. Installer Python 3.11 si absent ───────────────────────────────────────
+PY=""
+for c in python3.13 python3.12 python3.11 python3.10 python3 python; do
+    if command -v "$c" >/dev/null 2>&1 && \
+       "$c" -c 'import sys; sys.exit(0 if sys.version_info >= (3,10) else 1)' >/dev/null 2>&1; then
+        PY="$c"; break
+    fi
+done
+
+if [ -z "$PY" ]; then
+    echo "[INFO] Python 3.10+ introuvable — installation via apt..."
+    $SUDO apt-get update -qq
+    $SUDO apt-get install -y python3.11 python3.11-venv python3-pip
+    PY="python3.11"
+fi
+
+echo "[OK] Python : $($PY --version 2>&1) ($PY)"
+
+# ── 3. Vérifier python3-venv ─────────────────────────────────────────────────
+if ! "$PY" -m venv --help >/dev/null 2>&1; then
+    echo "[INFO] Module venv manquant — installation..."
+    $SUDO apt-get install -y python3-venv python3.11-venv 2>/dev/null || true
+fi
+
+# ── 4. Créer l'environnement virtuel ─────────────────────────────────────────
+if [ ! -x "$HERE/.venv/bin/python" ]; then
+    echo "[INFO] Création de l'environnement virtuel .venv..."
+    rm -rf "$HERE/.venv"
+    "$PY" -m venv "$HERE/.venv"
+fi
+
+# ── 5. Installer les dépendances ─────────────────────────────────────────────
+echo "[INFO] Installation des dépendances (rich, prompt_toolkit, httpx, cryptography)..."
+"$HERE/.venv/bin/python" -m pip install --upgrade pip -q
+"$HERE/.venv/bin/python" -m pip install -r "$HERE/requirements.txt" -q
+
+# ── 6. Rendre run.sh exécutable ──────────────────────────────────────────────
+chmod +x "$HERE/run.sh" 2>/dev/null || true
+
+# ── 7. Créer le lanceur LibertyCode.deb dans le dossier courant ─────────────
+LAUNCHER="$HERE/LibertyCode.deb"
+cat > "$LAUNCHER" << 'LAUNCHEOF'
+#!/bin/sh
+HERE="$(cd "$(dirname "$0")" && pwd)"
+if [ ! -x "$HERE/.venv/bin/python" ]; then
+    echo "[ERREUR] Environnement introuvable. Relancez installer.deb."
+    exit 1
+fi
+PYTHONPATH="$HERE${PYTHONPATH:+:$PYTHONPATH}" exec "$HERE/.venv/bin/python" -m liberty_code "$@"
+LAUNCHEOF
+chmod +x "$LAUNCHER"
+
+echo ""
+echo "[OK] LibertyCode installé avec succès !"
+echo "[OK] Lanceur créé : LibertyCode.deb"
+echo ""
+
+# ── 8. Se supprimer ──────────────────────────────────────────────────────────
+rm -f "$SELF"
+echo "[INFO] Installeur supprimé."
+echo ""
+echo "  Lancez LibertyCode avec :  ./LibertyCode.deb"
+echo ""
